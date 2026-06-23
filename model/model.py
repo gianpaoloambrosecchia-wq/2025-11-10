@@ -43,8 +43,14 @@ class Model:
         return topArchi[0:5]
 
 
-    # Cerca il percorso più lungo (peso maggiore)
+    # Cerca il percorso più lungo (peso maggiore), partendo da un dato nodo
     def cercaPercorsoPiuLungo(self, nodeSource):
+        # METODO PIU CORTO
+        #tree = nx.dfs_tree(self._graph, nodeSource)
+        #lp = nx.dag_longest_path(tree)
+        #return lp
+
+
         #for source in self._graph.nodes:
         tree = nx.dfs_tree(self._graph, nodeSource)
         nodi = list(tree.nodes())
@@ -77,10 +83,10 @@ class Model:
         parziale.append(nodeSource)
         # Inizializzo a infinito il peso precdente, cosi sicuramente sara minore il peso dell'arco corrente
         # alla prima iterazione
-        self._ricorsione(parziale, float('inf'), nodeSource)
+        self._ricorsione(parziale, float('inf'))
 
 
-    def _ricorsione(self, parziale, peso_precedente, node):
+    def _ricorsione(self, parziale, peso_precedente):
 
         if self._calcolaCosto(parziale) >= self._costoBest:
             self._solBest = copy.deepcopy(parziale)
@@ -88,24 +94,23 @@ class Model:
 
 
         # Consideri i successori del nodo corrente (nodes) e itero sui vicini
-        for vicino in self._graph.successors(node):
+        for vicino in self._graph.successors(parziale[-1]):
 
             # Visto che vicino è un vicino di node, sono sicuramente collegati da un arco, a cui accedo così:
-            peso_arco = self._graph[node][vicino]['weight']
+            peso_arco = self._graph[parziale[-1]][vicino]['weight']
 
             # Verifico che il peso corrente dell'arco sia minore del peso dell'arco precedente
 
-            if peso_arco < peso_precedente:
+            if peso_arco < peso_precedente and vicino not in parziale:
                 parziale.append(vicino)
-                self._ricorsione(parziale, peso_arco, vicino)
+                self._ricorsione(parziale, peso_arco)
                 parziale.pop()
 
 
 
 
     def _calcolaCosto(self, parziale):
-        if len(parziale) == 0:
-            return 0
+
         somma = 0
 
         # In parziale ho nodi che sono sempre collegati da archi quindi iterando in parziale
